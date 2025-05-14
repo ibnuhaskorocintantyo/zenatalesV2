@@ -1,4 +1,4 @@
-import express, { type Request, Response, NextFunction } from "express";
+import express from "express";
 import serverless from "serverless-http";
 import { registerRoutes } from "./helpers/routes";
 import { setupVite, serveStatic, log } from "./helpers/vite";
@@ -7,6 +7,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -46,18 +47,19 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // Modifikasi bagian ini untuk development lokal
-  if (process.env.NODE_ENV === "development") {
-    const port = 5000;
-    server.listen({
-      port,
-      host: "0.0.0.0",
-      reusePort: true,
-    }, () => {
-      log(`🚀 Server lokal berjalan di port ${port}`);
-    });
+  // Jalankan server di semua mode
+  server.listen(
+  {
+    port: Number(process.env.PORT) || 5000,  // Default ke 5000 jika PORT tidak ada
+    host: "0.0.0.0",
+    reusePort: true,
+  },
+  () => {
+    log(`🚀 Server berjalan di port ${process.env.PORT || 5000} [${app.get("env")}]`);
   }
+);
+
 })();
 
-// Export handler untuk Vercel
+// Export untuk Vercel
 export const handler = serverless(app);
